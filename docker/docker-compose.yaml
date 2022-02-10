@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  nginx:
+    build:
+      context: nginx
+      args:
+        UID: ${USER_ID}
+        GID: ${GROUP_ID}
+        USER: ${USER}
+    user: ${USER_ID}:${GROUP_ID}
+    tty: true
+    depends_on:
+      - php
+    ports:
+      - 8080:80
+      - 8443:443
+    networks:
+      - dev
+
+  php:
+    build: php
+    tty: true
+    user: ${USER_ID}:${GROUP_ID}    
+    volumes:
+      - ../:/var/www/html
+    networks:
+      - dev
+
+  pgsql:
+    image: postgres:9.6-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=dev
+      - POSTGRES_DB=potential-waddle
+    ports:
+      - 5432:5432
+
+volumes:
+  pgdata:
+    name: potential_waddle_pgdata
+    driver: local
+
+networks:
+  dev:
+    name: potential_waddle_dev
